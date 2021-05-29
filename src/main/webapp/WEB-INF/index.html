@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+	<head>
+		<meta charset="utf-8" />
+	    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+		<title>地图数据可视化</title>
+		<link rel="stylesheet" href="css/bootstrap.min.css" />
+		<link rel="stylesheet" href="css/app.css" />
+		<script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
+		<script type="text/javascript" src="js/echarts-3.8.5.min.js"></script>
+		<script type="text/javascript" src="js/echarts-map-world.js"></script>
+		<script type="text/javascript" src="js/echarts-map-china.js"></script>
+		<script type="text/javascript" src="js/echarts-china-provinces/jiangsu.js"></script>
+		<script type="text/javascript" src="js/echarts-china-cities/jiang1_su1_su1_zhou1.js"></script>
+		<script type="text/javascript" src="js/echarts-china-counties/jiang1su1_su1zhou1_kun1shan1shi4.js"></script>
+
+	</head>
+
+	<body class="bg01">
+		<header class="header">
+			<h3>地图数据可视化</h3>
+<!--			<div class="search"></div>-->
+<!--			<div class="search"></div>-->
+			<div class="search">
+				<input type="button" value="刷新数据" id="refresh" style="color: #5dc2fe"/>
+			</div>
+		</header>
+		
+		<div class="wrapper" >
+			<div class="container-fluid">
+				<div class="row fill-h">
+					<div class="col-lg-3 fill-h">
+						<div class="xpanel-wrapper xpanel-wrapper-2">
+							<div class="xpanel">
+								<!-- 前十地区 -->
+								<div class="fill-h" id="flyMap"></div>
+							</div>
+						</div>
+						<div class="xpanel-wrapper xpanel-wrapper-2">
+							<div class="xpanel">
+								<!-- 世界地图 -->
+								<div class="fill-h" id="worldMap"></div>
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-6 fill-h">
+						<div class="xpanel-wrapper xpanel-wrapper-1">
+							<div class="xpanel">
+								<!-- 地图散点 -->
+								<div class="fill-h" id="scatterMap"></div>
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-3 fill-h" >
+						<div class="xpanel-wrapper xpanel-wrapper-3" id="showData1">
+							<div class="xpanel" >
+<!--								确诊板块-->
+								<div class="fill-h" id="provinceMap">
+									<div style="height:106px;">
+										<div class="show-data" style="color: #fc7b2b;">现有确诊
+										</div>
+										<div id="lastConfirm" class="show-data" style="color: #f91b02;">
+										</div>
+									</div>
+									<div  style="height:106px;">
+										<div class="show-data" style="color: #fc7b2b;">累计确诊</div>
+										<div id="allConfirm"  class="show-data" style="color: #f7280f;"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="xpanel-wrapper xpanel-wrapper-3" id="showData2">
+							<div class="xpanel">
+<!--								治愈板块-->
+								<div class="fill-h" id="cityMap">
+									<div style="height: 106px;">
+										<div class="show-data" style="color: #1ff51f">累计治愈
+										</div>
+										<div id="cured" class="show-data" >
+										</div>
+									</div>
+									<div>
+										<div class="show-data" style="color: #75d024">治愈率</div>
+										<div class="show-data" style="color: #15f5aa">84%</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="xpanel-wrapper xpanel-wrapper-3" id="showData3">
+							<div class="xpanel">
+								<!-- 死亡模块 -->
+								<div class="fill-h" id="countyMap">
+									<div style="height: 106px;">
+										<div class="show-data" style="color:rgb(254,151,30);">累计死亡
+										</div>
+										<div id="allDead" class="show-data" style="color: rgb(208,0,0);">
+										</div>
+									</div>
+									<div>
+										<div class="show-data" style="
+										color: rgb(254,151,30);">病死率</div>
+										<div class="show-data" style="color: rgb(192,0,0);">1.09%</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript">
+			$("#refresh").click(function (){
+				window.location.reload();
+			});
+
+			$.ajax({
+				type: "get",
+				url: "/epidemic/detail/allConfirm",
+				dataType: "json",
+				success: function (data) {
+					$("#allConfirm").text(data)
+				}
+			})
+			$.ajax({
+				type: "get",
+				url: "/epidemic/detail/allDead",
+				dataType: "json",
+				success: function (data) {
+					$("#allDead").text(data)
+				}
+			})
+			$.ajax({
+				type: "get",
+				url: "/epidemic/detail/lastConfirm",
+				dataType: "json",
+				success: function (data) {
+					$("#lastConfirm").text(data)
+				}
+			})
+			$.ajax({
+				type: "get",
+				url: "/epidemic/detail/allCured",
+				dataType: "json",
+				success: function (data) {
+					$("#cured").text(data)
+				}
+			})
+		</script>
+		<script type="text/javascript">
+			$(function() {
+				const ddchartDom = document.getElementById('flyMap');
+				const inChart = echarts.init(ddchartDom);
+				let foption;
+				// var colors ={"Rajasthan":"#00008b","Chhattisgarh":"#f00","West Bengal":"#ffde00","Delhi":"#002a8f","Andhra Pradesh":"#003580","Tamil Nadu":"#ed2939","Uttar Pradesh":"#000","Kerala":"#003897","Karnataka":"#f93","Maharashtra":"#bc002d"};
+				foption = {
+					title: {
+						left:'right',
+						text: '印度累计确诊人数前十地区',
+						textStyle:{
+							color:'#ffffff'
+						},
+						subtext: '数据来自网络'
+					},
+					tooltip: {
+
+						trigger: 'axis',
+						axisPointer: {
+							type: 'shadow'
+						}
+					},
+
+					grid: {
+						left: '2%',
+						right: '4%',
+						bottom: '3%',
+						containLabel: true
+					},
+					xAxis:
+							{
+								axisLabel:{
+									show:false
+									// textStyle:{
+									// color:"#15e6d6",
+									// fontSize: 15,
+									// interval:0,
+									// 		}
+							},
+						type: 'value',
+					},
+					yAxis: {
+						name: "单位：人", //坐标名字
+						nameLocation: "end",//坐标位置，支持start,end，middle
+						nameTextStyle: {//字体样式
+							fontSize: 16,//字体大小
+							padding: 2 ,//距离坐标位置的距离
+							color:"#15e6d6"
+						},
+						axisLabel:{
+							textStyle:{
+								color:"#15e6d6",
+								fontSize: 15
+							}},
+						type: 'category',
+						data: ['Rajasthan', 'Chhattisgarh', 'West Bengal', 'Delhi', 'Andhra Pradesh', 'Tamil Nadu','Uttar Pradesh', 'Kerala', 'Karnataka', 'Maharashtra']
+					},
+					series: [
+
+						//需要对获得的数据进行排序
+						{
+							name: '2021年5月',
+							type: 'bar',
+							data: [849389, 907589, 1114313,1387411 ,1411320, 1565035, 1609140, 2118263, 2171931, 5344063],
+							itemStyle:{
+								normal: {
+									label: {
+									show: false,  //开启显示
+									position: 'right',  //在右方显示
+									textStyle: {  //数值样式
+										color: 'green',
+										fontSize: 16
+									}
+								}
+							}
+						}
+						},
+					],
+					
+				};
+
+				foption && inChart.setOption(foption);
+
+
+				const scatterMap = echarts.init(document.getElementById("scatterMap"));
+				scatterMap.showLoading({text:'正在加载数据'});
+				$.ajax({
+					type:"get",
+					url:"/epidemic/detail/lt",
+					dataType:"json",
+					success:function(scatterVal){
+					scatterMap.hideLoading();
+
+						const scatterGeo = {
+							"Andaman and Nicobar Islands":[92.667,11.89],
+							"Andhra Pradesh":[79.38,16.700],
+							"Arunachal Pradesh":[94.89,27.30],
+							"Assam":[94.175,26.459],
+							"Bihar":[85.40,26.492],
+							"Chandigarh":[76.76,30.74],
+							"Chhattisgarh":[82.01,21.87],
+							"Dadra and Nagar Haveli and Daman and Diu":[72.84,20.41],
+							"Delhi":[77.09,28.74],
+							"Goa":[74.07,15.40],
+							"Gujarat":[71.32,22.89],
+							"Haryana":[72.84,20.41],
+							"Himachal Pradesh":[75.79,29.33],
+							"Jammu and Kashmir":[76.97,32.45],
+							"Jharkhand":[76.05,33.89],
+							"Karnataka":[85.32,23.74],
+							"Kerala":[75.35,14.20],
+							"Ladakh":[76.23,10.76],
+							"Lakshadweep":[72.39,10.56],
+							"Madhya Pradesh":[77.93,34.34],
+							"Maharashtra":[78.45,22.91],
+							"Manipur":[75.49,19.98],
+							"Meghalaya":[94.20,24.73],
+							"Mizoram":[90.94,25.70],
+							"Nagaland":[92.76,23.31],
+							"Odisha":[94.81,26.10],
+							"Puducherry":[83.87,20.25],
+							"Punjab":[75.38,30.72],
+							"Rajasthan":[79.77,11.93],
+							"Sikkim":[80.92,26.84],
+							"Tamil Nadu":[73.16,26.78],
+							"Tripura":[91.678302,23.741404],
+							"Uttarakhand":[79.103749,30.134435],
+							"Uttar Pradesh":[80.906685,26.851843],
+							"West Bengal":[87.345738,22.977023]
+
+						};
+						let res = [];
+						console.log(scatterVal)
+						// 数据转换，转换后的格式：[{name: 'cityName', value: [lng, lat, val]}, {...}]
+						const convertScatterData = function(data) {
+							let res = [];
+							for(let i=0;i<data.length;i++) {
+								let geoCoord = scatterGeo[data[i].name];
+								if(geoCoord) {
+									res.push({
+										name: data[i].name,
+										value: geoCoord.concat(data[i].value),
+									});
+								}
+							}
+							return res;
+						};
+						const sactterMapOpt = {
+							title: {
+								text: '印度疫情分布图',
+								x: 'right',
+								textStyle: {
+									color: '#fff'
+								}
+							},
+							legend: {
+								data: ['感染人数'], //与series的name属性对应
+								orient: 'vertical',
+								y: 'bottom',
+								x: 'right',
+								textStyle: {
+									color: '#fff'
+								}
+							},
+							tooltip: {
+								show:true,
+								transitionDuration:0.2,
+								trigger: 'item',
+
+								formatter: function (params) {
+									return params.name +'<br>'+ '确诊人数: ' +params.value[2];
+								},
+								// formatter: function(params) {
+								// 	return params.name +'<br>'+ '确诊人数: ' +params.value[2];
+								//
+								// }
+							},
+							visualMap: {
+								min: 10000,
+								max: 7000000,
+								calculable: false,
+								inRange: {
+									color: ['#50a3ba', '#eac736', '#d94e5d']
+								},
+								textStyle: {
+									color: '#fff'
+								}
+							},
+							geo: {
+								map: 'India',
+								roam: false, //开启鼠标缩放和漫游
+								zoom: 1, //地图缩放级别
+								selectedMode: false, //选中模式：single | multiple
+								left: 0,
+								right: 0,
+								top: 0,
+								bottom: 0,
+								layoutCenter: ['50%', '50%'], //设置后left/right/top/bottom等属性无效
+								layoutSize: '100%',
+								label: {
+									emphasis: {
+										show: false
+									}
+								},
+								itemStyle: {
+									normal: {
+										areaColor: '#101f32',
+										borderWidth: 1.1,
+										borderColor: '#43d0d6'
+									},
+									emphasis: {
+										areaColor: '#069'
+									}
+								}
+							},
+							series: [{
+								name: '感染人数',
+								type: 'scatter',
+								coordinateSystem: 'geo',
+								symbolSize: 12,
+								label: {
+									normal: {
+										show: false
+									},
+									emphasis: {
+										show: false
+									}
+								},
+								itemStyle: {
+									emphasis: {
+										borderColor: '#fff',
+										borderWidth: 1
+									}
+								},
+								data:convertScatterData(scatterVal)
+
+							}]
+						};
+
+						scatterMap.setOption(sactterMapOpt);
+						scatterMap.resize();
+					},
+						error:function()
+						{
+							/***************** 地图散点 ******************/
+							//初始化echarts实例
+							const scatterMap = echarts.init(document.getElementById("scatterMap"));
+							//各联邦中心经纬度
+							const scatterGeo = {
+								"Andaman and Nicobar Islands":[92.667,11.89],
+								"Andhra Pradesh":[79.38,16.700],
+								"Arunachal Pradesh":[94.89,27.30],
+								"Assam":[94.175,26.459],
+								"Bihar":[85.40,26.492],
+								"Chandigarh":[76.76,30.74],
+								"Chhattisgarh":[82.01,21.87],
+								"Dadra and Nagar Haveli and Daman and Diu":[72.84,20.41],
+								"Delhi":[77.09,28.74],
+								"Goa":[74.07,15.40],
+								"Gujarat":[71.32,22.89],
+								"Haryana":[72.84,20.41],
+								"Himachal Pradesh":[75.79,29.33],
+								"Jammu and Kashmir":[76.97,32.45],
+								"Jharkhand":[76.05,33.89],
+								"Karnataka":[85.32,23.74],
+								"Kerala":[75.35,14.20],
+								"Ladakh":[76.23,10.76],
+								"Lakshadweep":[72.39,10.56],
+								"Madhya Pradesh":[77.93,34.34],
+								"Maharashtra":[78.45,22.91],
+								"Manipur":[75.49,19.98],
+								"Meghalaya":[94.20,24.73],
+								"Mizoram":[90.94,25.70],
+								"Nagaland":[92.76,23.31],
+								"Odisha":[94.81,26.10],
+								"Puducherry":[83.87,20.25],
+								"Punjab":[75.38,30.72],
+								"Rajasthan":[79.77,11.93],
+								"Sikkim":[80.92,26.84],
+								"Tamil Nadu":[73.16,26.78],
+								"Tripura":[91.678302,23.741404],
+								"Uttarakhand":[79.103749,30.134435],
+								"Uttar Pradesh":[80.906685,26.851843],
+								"West Bengal":[87.345738,22.977023]
+
+							};
+							// //城市数据
+							const scatterVal = [
+								{name: "Andaman and Nicobar Islands", value: 489789},
+								{name: "Andhra Pradesh", value: 12,death:78},
+								{name: "Arunachal Pradesh", value: 12},
+								{name: "Assam",value:456},
+								{name: "Bihar",value:50},
+								{name: "Chandigarh",value:50},
+								{name: "Chhattisgarh",value:50},
+								{name: "Dadra and Nagar Haveli and Daman and Diu",value:50},
+								{name: "Delhi",value:50},
+								{name: "Goa",value:50},
+								{name: "Lakshadweep",value:50},
+								{name: "Punjab",value:50},
+								{name: "Gujarat",value:50},
+								{name: "Haryana",value:50},
+								{name: "Himachal Pradesh",value:50},
+								{name: "Jammu and Kashmir",value:50},
+								{name: "Jharkhand",value:50},
+								{name: "Karnataka",value:50},
+								{name: "Manipur",value:50},
+								{name: "Kerala",value:50},
+								{name: "Maharashtra",value:50},
+								{name: "Ladakh",value:50},
+								{name: "Madhya Pradesh",value:50},
+								{name: "Meghalaya",value:50},
+								{name: "Mizoram",value:50},
+								{name: "Nagaland",value:50},
+								{name: "Odisha",value:50},
+								{name: "Puducherry",value:50},
+								{name: "Rajasthan",value:50},
+								{name: "Sikkim",value:50},
+								{name: "Tamil Nadu",value:50},
+								{name: "Tripura",value:50},
+								{name: "Uttarakhand",value:50},
+								{name: "Uttar Pradesh",value:50},
+								{name: "West Bengal",value:50},
+							];
+
+							// 数据转换，转换后的格式：[{name: 'cityName', value: [lng, lat, val]}, {...}]
+							const convertScatterData = function(data) {
+								let res = [];
+								for(let i=0;i<data.length;i++) {
+									let geoCoord = scatterGeo[data[i].name];
+									if(geoCoord) {
+										res.push({
+											name: data[i].name,
+											value: geoCoord.concat(data[i].value),
+
+										});
+									}
+								}
+								return res;
+							};
+							const sactterMapOpt = {
+								title: {
+									text: '印度疫情',
+
+									x: 'center',
+									textStyle: {
+										color: '#fff'
+									}
+								},
+								legend: {
+									data: ['感染人数'], //与series的name属性对应
+									orient: 'vertical',
+									y: 'bottom',
+									x: 'right',
+									textStyle: {
+										color: '#fff'
+									}
+								},
+								tooltip: {
+
+									show:true,
+									transitonDuration:0.2,
+									trigger: 'item',
+									formatter: function(params) {
+										return params.name +'<br>'+ '确诊人数: ' +params.value[2];
+									}
+								},
+								visualMap: {
+									min: 0,
+									max: 20000,
+									calculable: false,
+									inRange: {
+										color: ['#50a3ba', '#eac736', '#d94e5d']
+									},
+									textStyle: {
+										color: '#fff'
+									}
+								},
+								geo: {
+									map: 'India',
+									roam: false, //开启鼠标缩放和漫游
+									zoom: 1, //地图缩放级别
+									selectedMode: false, //选中模式：single | multiple
+									left: 0,
+									right: 0,
+									top: 0,
+									bottom: 0,
+									layoutCenter: ['50%', '50%'], //设置后left/right/top/bottom等属性无效
+									layoutSize: '100%',
+									label: {
+										emphasis: {
+											show: false
+										}
+									},
+									itemStyle: {
+										normal: {
+											areaColor: '#101f32',
+											borderWidth: 1.1,
+											borderColor: '#43d0d6'
+										},
+										emphasis: {
+											areaColor: '#069'
+										}
+									}
+								},
+								series: [{
+									name: '感染人数',
+									type: 'scatter',
+									coordinateSystem: 'geo',
+									symbolSize: 12,
+									label: {
+										normal: {
+											show: false
+										},
+										emphasis: {
+											show: false
+										}
+									},
+									itemStyle: {
+										emphasis: {
+											borderColor: '#fff',
+											borderWidth: 1
+										}
+									},
+									data:convertScatterData(scatterVal)
+
+								}]
+							};
+
+							scatterMap.setOption(sactterMapOpt);
+							scatterMap.resize();
+									}
+						
+					})
+
+
+				const chartDom2 = document.getElementById('worldMap');
+				const myChart2 = echarts.init(chartDom2);
+				let option2;
+
+				$.ajax({
+					type: "get",
+					url: "/epidemic/day/lt",
+					dataType: "json",
+					success: function (scatterVal) {
+						console.log(scatterVal)
+						option2 = {
+							title: {
+								textStyle:{
+									color:'#ffffff'
+								},
+								text: '增长趋势图',
+								left: 'right'
+							},
+							tooltip: {
+								trigger: 'item',
+								formatter: '{a} <br/>{b} : {c}'
+							},
+							legend: {
+								left: 'left',
+								data: ['年', '月', '日'],
+								selected:{'年':false, '月':false, '日':true}
+							},
+							xAxis: {
+								type: 'category',
+								name: '日期',
+								splitLine: {show: false},
+								data: ['一', '二', '三', '四', '五', '六', '七'],
+								axisLine:{
+									lineStyle:{
+										color:'#ffffff',
+										width:7
+									}
+								}
+							},
+							grid: {
+								left: '1%',
+								right: '2%',
+								bottom: '2%',
+								containLabel: true
+							},
+							yAxis: {
+								axisLine:{
+									lineStyle:{
+										color:'#ffffff',
+										width:7
+									}
+								},
+								type: 'value',
+								name: '人数',
+								minorSplitLine: {
+									show: false
+								}
+							},
+							series: [
+								{
+									name: '年',
+									type: 'line',
+									data: [2, 3, 8, 66, 44]
+								},
+								{
+
+									name: '月',
+									type: 'line',
+									data: [400000, 510000, 520000, 530000, 530000, 630000, 730000, 789000, 799900]
+								},
+								{
+									name: '日',
+									type: 'line',
+									data: scatterVal
+								},
+
+							]
+						};
+
+						option2 && myChart2.setOption(option2);
+					}
+				});
+
+				/********** 浏览器窗口改变时，重置报表大小 ****************/
+				window.onresize = function() {
+					myChart2.resize();
+					inChart.resize();
+					scatterMap.resize();
+
+				}
+			});
+		</script>
+	</body>
+</html>
