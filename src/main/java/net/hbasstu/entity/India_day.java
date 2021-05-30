@@ -1,7 +1,5 @@
 package net.hbasstu.entity;
 
-import lombok.Data;
-
 import java.util.Date;
 
 public class India_day {

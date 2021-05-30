@@ -1,8 +1,6 @@
 package net.hbasstu.controller;
 
-import net.hbasstu.entity.India_day;
 import net.hbasstu.entity.India_month;
-import net.hbasstu.service.DayService;
 import net.hbasstu.service.MonthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

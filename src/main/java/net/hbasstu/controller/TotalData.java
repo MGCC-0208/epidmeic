@@ -1,6 +1,5 @@
 package net.hbasstu.controller;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data

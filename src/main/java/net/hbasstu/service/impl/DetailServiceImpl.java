@@ -4,22 +4,21 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import net.hbasstu.controller.TotalData;
 import net.hbasstu.entity.India_detail;
-import net.hbasstu.entity.India_year;
 import net.hbasstu.mapper.DetailMapper;
-import net.hbasstu.mapper.YearMapper;
 import net.hbasstu.service.DetailService;
-import net.hbasstu.service.YearService;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @Service
+
 public class DetailServiceImpl extends ServiceImpl<DetailMapper, India_detail> implements DetailService {
     @Override
     public List<India_detail> getList() {
         List<India_detail> datas = baseMapper.selectList(null);
-
         return datas;
     }
 
@@ -65,6 +64,18 @@ public class DetailServiceImpl extends ServiceImpl<DetailMapper, India_detail> i
         }
 //        System.out.println(cured);
         return cured;
+    }
+
+    @Override
+    public List<India_detail> getByState(String state) {
+        QueryWrapper<India_detail> wrapper = new QueryWrapper<>();
+        wrapper.eq("state",state).orderByDesc("date");
+        List<India_detail> dataByState = baseMapper.selectList(wrapper);
+        if (dataByState.size()==0)
+        {
+            dataByState=null;
+        }
+        return dataByState;
     }
 
     @Override

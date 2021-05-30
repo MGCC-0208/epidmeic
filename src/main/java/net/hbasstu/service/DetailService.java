@@ -13,4 +13,5 @@ public interface DetailService {
     public Integer getAllConfirm(Date date);
     public Integer getAllDead(Date date);
     public Integer getAllCured(Date date);
+    public List<India_detail> getByState(String state);
 }

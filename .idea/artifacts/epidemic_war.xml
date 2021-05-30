@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="war" name="epidemic:war">
-    <output-path>$PROJECT_DIR$/../../ep</output-path>
-    <root id="archive" name="epidemic_war.war">
-      <element id="artifact" artifact-name="epidemic:war exploded" />
-    </root>
-  </artifact>
-</component>

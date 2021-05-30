@@ -1,6 +1,13 @@
 <component name="ArtifactManager">
   <artifact type="exploded-war" name="epidemic:war exploded">
-    <output-path>$PROJECT_DIR$/out/artifacts/epidemic_war_exploded</output-path>
+    <output-path>$PROJECT_DIR$/target/epidemic</output-path>
+    <properties id="maven-jee-properties">
+      <options>
+        <exploded>true</exploded>
+        <module>epidemic</module>
+        <packaging>war</packaging>
+      </options>
+    </properties>
     <root id="root">
       <element id="directory" name="WEB-INF">
         <element id="directory" name="classes">
@@ -24,15 +31,20 @@
           <element id="library" level="project" name="Maven: org.mybatis:mybatis:3.5.6" />
           <element id="library" level="project" name="Maven: mysql:mysql-connector-java:8.0.12" />
           <element id="library" level="project" name="Maven: com.google.protobuf:protobuf-java:2.6.0" />
-          <element id="library" level="project" name="Maven: com.baomidou:mybatis-plus:3.1.1" />
-          <element id="library" level="project" name="Maven: com.baomidou:mybatis-plus-extension:3.1.1" />
-          <element id="library" level="project" name="Maven: com.baomidou:mybatis-plus-core:3.1.1" />
-          <element id="library" level="project" name="Maven: com.baomidou:mybatis-plus-annotation:3.1.1" />
-          <element id="library" level="project" name="Maven: com.github.jsqlparser:jsqlparser:1.2" />
-          <element id="library" level="project" name="Maven: org.mybatis:mybatis-spring:2.0.1" />
+          <element id="library" level="project" name="Maven: com.baomidou:mybatis-plus:3.4.3" />
+          <element id="library" level="project" name="Maven: com.baomidou:mybatis-plus-extension:3.4.3" />
+          <element id="library" level="project" name="Maven: com.baomidou:mybatis-plus-core:3.4.3" />
+          <element id="library" level="project" name="Maven: com.baomidou:mybatis-plus-annotation:3.4.3" />
+          <element id="library" level="project" name="Maven: com.github.jsqlparser:jsqlparser:4.0" />
+          <element id="library" level="project" name="Maven: org.mybatis:mybatis-spring:2.0.6" />
           <element id="library" level="project" name="Maven: com.alibaba:druid:1.1.18" />
+          <element id="library" level="project" name="Maven: javax.servlet.jsp.jstl:javax.servlet.jsp.jstl-api:1.2.2" />
+          <element id="library" level="project" name="Maven: taglibs:standard:1.1.2" />
           <element id="library" level="project" name="Maven: com.alibaba:fastjson:1.2.75" />
         </element>
+      </element>
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/target/epidemic/META-INF/MANIFEST.MF" />
       </element>
       <element id="javaee-facet-resources" facet="epidemic/web/Web" />
     </root>
